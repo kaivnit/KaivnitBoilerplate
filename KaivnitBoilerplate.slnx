@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/KaivnitBoilerplate.Application/KaivnitBoilerplate.Application.csproj" />
+  <Project Path="src/KaivnitBoilerplate.Domain/KaivnitBoilerplate.Domain.csproj" />
+  <Project Path="src/KaivnitBoilerplate.Infrastructure/KaivnitBoilerplate.Infrastructure.csproj" />
+  <Project Path="src/KaivnitBoilerplate.Presentation/KaivnitBoilerplate.Presentation.csproj" />
+</Solution>
