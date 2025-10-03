@@ -418,3 +418,15 @@ FodyWeavers.xsd
 *.msp
 bin/
 obj/
+
+# Publish profiles
+**/Properties/PublishProfiles/*.pubxml
+**/Properties/PublishProfiles/*.pubxml.user
+
+# Local secrets
+**/secrets.json
+
+# Only if they appear in the repo
+.tools/
+.store/
+.packages/
