@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KaivnitBoilerplate.Application\KaivnitBoilerplate.Application.csproj" />
+    <ProjectReference Include="..\KaivnitBoilerplate.Infrastructure\KaivnitBoilerplate.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>
