@@ -9,6 +9,8 @@ The project is organized into 4 main layers following Clean Architecture princip
 
 ![Project Structure](images/screenshot-base-project.png)
 
+Link Demo: [HERE](https://kaivnitboilerplate.azurewebsites.net/)
+
 ### 📁 Directory Structure
 ```
 KaivnitBoilerplate/
