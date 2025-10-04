@@ -41,6 +41,7 @@ public class SecurityRequestHeaderMiddleware
     {
         if (!ValidateRequestHeaders(context))
         {
+            _logger.LogError("SECURITY: Request blocked - Invalid headers detected for {Path}", context.Request.Path);
             context.Response.StatusCode = 400;
             await context.Response.WriteAsync("Invalid request headers");
             return;
