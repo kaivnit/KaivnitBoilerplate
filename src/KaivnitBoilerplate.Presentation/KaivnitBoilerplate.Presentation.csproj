@@ -17,7 +17,7 @@
 	
 	<!-- Hosting/IIS - To publish/transform standard web.config for ANCM -->
 	<IsTransformWebConfigDisabled>false</IsTransformWebConfigDisabled>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
 
     <!-- Useful options -->
     <InvariantGlobalization>false</InvariantGlobalization>
