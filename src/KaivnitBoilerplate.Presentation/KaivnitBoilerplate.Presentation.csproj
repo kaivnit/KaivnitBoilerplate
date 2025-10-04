@@ -4,11 +4,34 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+	
+	<!-- Self-contained + Single-file -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
+    <PublishTrimmed>false</PublishTrimmed>
+	
+	<!-- Important for .exe (self-contained) -->
+	<UseAppHost>true</UseAppHost>
+	
+	<!-- Hosting/IIS - To publish/transform standard web.config for ANCM -->
+	<IsTransformWebConfigDisabled>false</IsTransformWebConfigDisabled>
+    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+
+    <!-- Useful options -->
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KaivnitBoilerplate.Application\KaivnitBoilerplate.Application.csproj" />
     <ProjectReference Include="..\KaivnitBoilerplate.Infrastructure\KaivnitBoilerplate.Infrastructure.csproj" />
   </ItemGroup>
+  
+  <!-- (Optional) Only enable R2R after verifying startup -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishReadyToRun>false</PublishReadyToRun>
+  </PropertyGroup>
 
 </Project>
