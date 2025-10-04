@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace KaivnitBoilerplate.Infrastructure.Installers.Middlewares;
 
-[MiddlewareSkip]
+[MiddlewareOrder(5)] // Run early in pipeline, but after exception handler
 public sealed class SecurityRequestHeaderMiddlewareInstaller : IMiddlewareInstaller
 {
     public void InstallMiddleware(IApplicationBuilder app, IWebHostEnvironment env)
