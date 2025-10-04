@@ -1,7 +1,7 @@
 # KaivnitBoilerplate
 
 ## Overview
-A boilerplate project built with Clean Architecture and Domain-Driven Design (DDD), using .NET 10.0 and ASP.NET Core Razor Pages.
+A boilerplate project built with Clean Architecture and Domain-Driven Design (DDD), using .NET 9.0 and ASP.NET Core Razor Pages.
 
 ## Project Structure
 
@@ -29,17 +29,17 @@ KaivnitBoilerplate/
 
 #### 1. **Domain Layer** (`KaivnitBoilerplate.Domain`)
 - **Purpose**: Contains entities, value objects, domain services and core business rules
-- **Characteristics**: 
+- **Characteristics**:
   - No dependencies on any other layers
   - Contains pure business logic
-  - Framework: .NET 10.0 (Class Library)
+  - Framework: .NET 9.0 (Class Library)
 
 #### 2. **Application Layer** (`KaivnitBoilerplate.Application`)
 - **Purpose**: Contains use cases, application services and interfaces
 - **Characteristics**:
   - Depends on Domain Layer
   - Defines interfaces for Infrastructure Layer
-  - Framework: .NET 10.0 (Class Library)
+  - Framework: .NET 9.0 (Class Library)
   - References: Domain Layer
 
 #### 3. **Infrastructure Layer** (`KaivnitBoilerplate.Infrastructure`)
@@ -47,7 +47,7 @@ KaivnitBoilerplate/
 - **Characteristics**:
   - Contains data access, external API calls, file system operations
   - Depends on Application and Domain Layer
-  - Framework: .NET 10.0 (Class Library)
+  - Framework: .NET 9.0 (Class Library)
   - References: Application Layer, Domain Layer
 
 #### 4. **Presentation Layer** (`KaivnitBoilerplate.Presentation`)
@@ -55,7 +55,7 @@ KaivnitBoilerplate/
 - **Characteristics**:
   - Uses ASP.NET Core Razor Pages
   - Depends on Application and Infrastructure Layer
-  - Framework: .NET 10.0 (Web Application)
+  - Framework: .NET 9.0 (Web Application)
   - References: Application Layer, Infrastructure Layer
 
 
