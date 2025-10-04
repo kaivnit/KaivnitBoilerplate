@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace KaivnitBoilerplate.Infrastructure.Installers.Middlewares;
 
-[MiddlewareOrder(8)]
+[MiddlewareOrder(9)]
 public sealed class MapRazorPageMiddlewareInstaller : IMiddlewareInstaller
 {
     public void InstallMiddleware(IApplicationBuilder app, IWebHostEnvironment env)

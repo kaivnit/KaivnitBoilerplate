@@ -1,18 +1,15 @@
 ﻿using KaivnitBoilerplate.Application.Abstractions;
+using KaivnitBoilerplate.Infrastructure.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
 
 namespace KaivnitBoilerplate.Infrastructure.Installers.Middlewares;
 
-[MiddlewareOrder(8)]
-public sealed class ExceptionHandlerMiddlewareInstaller : IMiddlewareInstaller
+[MiddlewareOrder(10)]
+public sealed class SecurityResponseHeaderMiddlewareInstaller : IMiddlewareInstaller
 {
     public void InstallMiddleware(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        if (!env.IsDevelopment())
-        {
-            app.UseExceptionHandler("/Error");
-        }
+        app.UseMiddleware<SecurityResponseHeaderMiddleware>();
     }
 }
