@@ -1,0 +1,73 @@
+name: Build & Deploy (Self-contained, Windows) - KaivnitBoilerplate
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'   # đổi '9.x' nếu bạn đang .NET 9
+
+      - name: Restore
+        run: dotnet restore src/KaivnitBoilerplate.Presentation/KaivnitBoilerplate.Presentation.csproj
+
+      - name: Publish self-contained (win-x64)
+        run: >
+          dotnet publish src/KaivnitBoilerplate.Presentation/KaivnitBoilerplate.Presentation.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeAllContentForSelfExtract=true
+          -p:PublishTrimmed=false
+          -o "${{ github.workspace }}/publish"
+
+      - name: Archive package
+        run: powershell -command "Compress-Archive -Path 'publish\*' -DestinationPath 'package.zip'"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sc-app
+          path: package.zip
+
+  deploy:
+    runs-on: windows-latest
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: sc-app
+          path: .
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_3729D6BBC2144313B592887D4D0522F9 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E7B0B0932A4E40BF9B51C316F8B8AFAA }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4640C759979F496DA8D8EB581E4F0C82 }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'KaivnitBoilerplate'
+          slot-name: 'Production'
+          package: .
+
