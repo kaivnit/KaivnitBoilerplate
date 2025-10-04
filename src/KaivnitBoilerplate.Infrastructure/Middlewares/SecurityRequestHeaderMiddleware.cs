@@ -14,15 +14,14 @@ public class SecurityRequestHeaderMiddleware
     private readonly IConfiguration _configuration;
 
     // Dangerous headers that could be used for attacks
+    // Note: X-Forwarded-Host and X-Forwarded-Server are commonly used by Azure App Service
     private static readonly string[] DangerousHeaders = new[]
     {
         "X-Original-URL",
         "X-Rewrite-URL",
-        "X-Forwarded-Host",
         "X-Host",
         "Proxy-Host",
         "Proxy-Connection",
-        "X-Forwarded-Server",
         "X-ProxyUser-Ip",
     };
 
@@ -82,15 +81,15 @@ public class SecurityRequestHeaderMiddleware
                 return false;
             }
 
-            // Check for SQL injection
-            if (validateHeaderValues && ContainsSqlInjectionPatterns(headerValue))
+            // Check for SQL injection (only for custom headers, not standard browser headers)
+            if (validateHeaderValues && IsCustomHeader(headerName) && ContainsSqlInjectionPatterns(headerValue))
             {
                 _logger.LogWarning("SECURITY: SQL injection detected in {HeaderName}", headerName);
                 return false;
             }
 
-            // Check for XSS
-            if (validateHeaderValues && ContainsXssPatterns(headerValue))
+            // Check for XSS (only for custom headers, not standard browser headers)
+            if (validateHeaderValues && IsCustomHeader(headerName) && ContainsXssPatterns(headerValue))
             {
                 _logger.LogWarning("SECURITY: XSS detected in {HeaderName}", headerName);
                 return false;
@@ -103,6 +102,24 @@ public class SecurityRequestHeaderMiddleware
     private bool IsDangerousHeader(string headerName)
     {
         return DangerousHeaders.Any(h => h.Equals(headerName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool IsCustomHeader(string headerName)
+    {
+        // Standard browser headers that should not be checked for XSS/SQL injection
+        var standardHeaders = new[]
+        {
+            "Accept", "Accept-Charset", "Accept-Encoding", "Accept-Language",
+            "Authorization", "Cache-Control", "Connection", "Content-Length",
+            "Content-Type", "Cookie", "Host", "If-Modified-Since",
+            "If-None-Match", "If-Range", "If-Unmodified-Since", "Max-Forwards",
+            "Pragma", "Proxy-Authorization", "Range", "Referer", "TE",
+            "Upgrade", "User-Agent", "Via", "Warning", "X-Forwarded-For",
+            "X-Forwarded-Host", "X-Forwarded-Proto", "X-Forwarded-Server",
+            "X-Real-IP", "X-Request-ID", "X-Correlation-ID"
+        };
+
+        return !standardHeaders.Any(h => h.Equals(headerName, StringComparison.OrdinalIgnoreCase));
     }
 
     private bool ContainsDangerousCharacters(string value)
@@ -118,7 +135,8 @@ public class SecurityRequestHeaderMiddleware
 
     private bool ContainsXssPatterns(string value)
     {
-        var patterns = new[] { "<script", "javascript:", "onerror=", "<iframe" };
+        // Only check for obvious XSS patterns, be more lenient with common browser headers
+        var patterns = new[] { "<script>", "javascript:", "onerror=", "<iframe>" };
         return patterns.Any(p => value.Contains(p, StringComparison.OrdinalIgnoreCase));
     }
 }
