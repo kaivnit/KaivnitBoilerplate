@@ -63,9 +63,11 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E7B0B0932A4E40BF9B51C316F8B8AFAA }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4640C759979F496DA8D8EB581E4F0C82 }}
 
-      - name: Deploy to Azure Web App (Zip Deploy)
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'KaivnitBoilerplate'
           slot-name: 'Production'
-          package: package.zip
+          package: .
+
