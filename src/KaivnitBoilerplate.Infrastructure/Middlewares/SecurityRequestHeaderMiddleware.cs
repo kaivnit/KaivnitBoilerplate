@@ -14,7 +14,7 @@ public class SecurityRequestHeaderMiddleware
     private readonly IConfiguration _configuration;
 
     // Dangerous headers that could be used for attacks
-    // Note: X-Forwarded-Host and X-Forwarded-Server are commonly used by Azure App Service
+    // Note: Azure App Service uses X-Forwarded-*, X-ARR-*, X-WAWS-* headers - these are safe
     private static readonly string[] DangerousHeaders = new[]
     {
         "X-Original-URL",
@@ -23,6 +23,20 @@ public class SecurityRequestHeaderMiddleware
         "Proxy-Host",
         "Proxy-Connection",
         "X-ProxyUser-Ip",
+    };
+
+    // Azure App Service safe headers - exempt from dangerous header check
+    private static readonly string[] AzureSafeHeaders = new[]
+    {
+        "X-ARR-SSL",
+        "X-ARR-ClientCert",
+        "X-ARR-LOG-ID",
+        "X-WAWS-Unencoded-URL",
+        "X-AppService-Proto",
+        "X-Site-Deployment-Id",
+        "X-Original-Proto",
+        "DISGUISED-HOST",
+        "WAS-DEFAULT-HOSTNAME"
     };
 
     private static readonly char[] DangerousCharacters = new[] { '\r', '\n', '\0' };
@@ -102,6 +116,19 @@ public class SecurityRequestHeaderMiddleware
 
     private bool IsDangerousHeader(string headerName)
     {
+        // Skip Azure safe headers
+        if (AzureSafeHeaders.Any(h => h.Equals(headerName, StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        // Skip headers starting with X-ARR- or X-WAWS- (Azure specific)
+        if (headerName.StartsWith("X-ARR-", StringComparison.OrdinalIgnoreCase) ||
+            headerName.StartsWith("X-WAWS-", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
         return DangerousHeaders.Any(h => h.Equals(headerName, StringComparison.OrdinalIgnoreCase));
     }
 
