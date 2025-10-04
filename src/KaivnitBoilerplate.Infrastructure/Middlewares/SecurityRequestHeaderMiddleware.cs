@@ -53,19 +53,35 @@ public class SecurityRequestHeaderMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        if (!ValidateRequestHeaders(context))
+        // TEMPORARY: Log all request headers for debugging Azure deployment
+        var isDevelopment = context.Request.Host.Host.Contains("localhost") ||
+                           context.Request.Host.Host.Contains("127.0.0.1");
+
+        if (!isDevelopment)
         {
-            _logger.LogError("SECURITY: Request blocked - Invalid headers detected for {Path}", context.Request.Path);
+            _logger.LogInformation("SECURITY DEBUG: Incoming request to {Path} from {Host}",
+                context.Request.Path, context.Request.Host);
+            foreach (var header in context.Request.Headers)
+            {
+                _logger.LogInformation("SECURITY DEBUG: Header {Name} = {Value}",
+                    header.Key, header.Value.ToString());
+            }
+        }
+
+        if (!ValidateRequestHeaders(context, out string? rejectionReason))
+        {
+            _logger.LogError("SECURITY: Request blocked - {Reason} for {Path}", rejectionReason, context.Request.Path);
             context.Response.StatusCode = 400;
-            await context.Response.WriteAsync("Invalid request headers");
+            await context.Response.WriteAsync($"Invalid request headers: {rejectionReason}");
             return;
         }
 
         await _next(context);
     }
 
-    private bool ValidateRequestHeaders(HttpContext context)
+    private bool ValidateRequestHeaders(HttpContext context, out string? rejectionReason)
     {
+        rejectionReason = null;
         var maxHeaderSize = _configuration.GetValue<int>("Security:MaxRequestHeaderSize", 8192);
         var blockDangerousHeaders = _configuration.GetValue<bool>("Security:BlockDangerousRequestHeaders", true);
         var validateHeaderValues = _configuration.GetValue<bool>("Security:ValidateRequestHeaderValues", true);
@@ -78,6 +94,7 @@ public class SecurityRequestHeaderMiddleware
             // Check for dangerous headers
             if (blockDangerousHeaders && IsDangerousHeader(headerName))
             {
+                rejectionReason = $"Dangerous header: {headerName}";
                 _logger.LogWarning("SECURITY: Blocked dangerous header: {HeaderName}", headerName);
                 return false;
             }
@@ -85,13 +102,16 @@ public class SecurityRequestHeaderMiddleware
             // Check header size limit
             if (headerValue.Length > maxHeaderSize)
             {
-                _logger.LogWarning("SECURITY: Header {HeaderName} exceeds max size", headerName);
+                rejectionReason = $"Header {headerName} exceeds max size ({headerValue.Length} > {maxHeaderSize})";
+                _logger.LogWarning("SECURITY: Header {HeaderName} exceeds max size: {Size} > {MaxSize}",
+                    headerName, headerValue.Length, maxHeaderSize);
                 return false;
             }
 
             // Check for CRLF injection
             if (validateHeaderValues && ContainsDangerousCharacters(headerValue))
             {
+                rejectionReason = $"CRLF injection in header: {headerName}";
                 _logger.LogWarning("SECURITY: CRLF injection detected in {HeaderName}", headerName);
                 return false;
             }
@@ -99,6 +119,7 @@ public class SecurityRequestHeaderMiddleware
             // Check for SQL injection (only for custom headers, not standard browser headers)
             if (validateHeaderValues && IsCustomHeader(headerName) && ContainsSqlInjectionPatterns(headerValue))
             {
+                rejectionReason = $"SQL injection pattern in header: {headerName}";
                 _logger.LogWarning("SECURITY: SQL injection detected in {HeaderName}", headerName);
                 return false;
             }
@@ -106,6 +127,7 @@ public class SecurityRequestHeaderMiddleware
             // Check for XSS (only for custom headers, not standard browser headers)
             if (validateHeaderValues && IsCustomHeader(headerName) && ContainsXssPatterns(headerValue))
             {
+                rejectionReason = $"XSS pattern in header: {headerName}";
                 _logger.LogWarning("SECURITY: XSS detected in {HeaderName}", headerName);
                 return false;
             }
