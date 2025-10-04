@@ -1,15 +1,18 @@
-name: Build & Deploy (Self-contained, Windows) - KaivnitBoilerplate
+# GitHub Actions workflow: Build & Deploy ASP.NET Core self-contained to Azure WebApp
+
+name: Build and deploy ASP.Net Core app to Azure Web App - KaivnitBoilerplate
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   build:
     runs-on: windows-latest
     permissions:
-      contents: read
+      contents: read # required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +20,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.x'   # đổi '9.x' nếu bạn đang .NET 9
+          dotnet-version: '10.x'
 
       - name: Restore
         run: dotnet restore src/KaivnitBoilerplate.Presentation/KaivnitBoilerplate.Presentation.csproj
@@ -29,14 +32,15 @@ jobs:
           -r win-x64
           --self-contained true
           -p:PublishSingleFile=true
-          -p:IncludeAllContentForSelfExtract=true
           -p:PublishTrimmed=false
+          -p:UseAppHost=true
           -o "${{ github.workspace }}/publish"
 
-      - name: Archive package
-        run: powershell -command "Compress-Archive -Path 'publish\*' -DestinationPath 'package.zip'"
+      - name: Archive package (no nested folder)
+        run: |
+          powershell -command "Compress-Archive -Path 'publish\*' -DestinationPath 'package.zip' -Force"
 
-      - name: Upload artifact
+      - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: sc-app
@@ -50,7 +54,7 @@ jobs:
       contents: read
 
     steps:
-      - name: Download artifact
+      - name: Download artifact from build
         uses: actions/download-artifact@v4
         with:
           name: sc-app
@@ -63,11 +67,9 @@ jobs:
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_E7B0B0932A4E40BF9B51C316F8B8AFAA }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_4640C759979F496DA8D8EB581E4F0C82 }}
 
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
+      - name: Deploy to Azure Web App (Zip Deploy)
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'KaivnitBoilerplate'
           slot-name: 'Production'
-          package: .
-
+          package: package.zip
